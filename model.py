@@ -24,6 +24,16 @@ class User(db.Model):
     age = db.Column(db.Integer, nullable=True)
     zipcode = db.Column(db.String(15), nullable=True)
 
+    @classmethod
+    def get_user_by_email_password(cls, user_email, user_password):
+        
+        try:
+            user_login_info = cls.query.filter_by(email=user_email, password=user_password).one()
+            return user_login_info
+        
+        except Exception, error:
+            print error
+
     def __repr__(self):
         """Provide helpful representation when printed."""
 
