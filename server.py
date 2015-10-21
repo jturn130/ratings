@@ -22,7 +22,7 @@ app.jinja_env.undefined = StrictUndefined
 @app.route('/')
 def index():
     """Homepage."""
-
+    
     return render_template("homepage.html")
 
 @app.route("/users")
@@ -83,6 +83,16 @@ def login_user():
 
     return render_template("login_form.html")
 
+@app.route("/logout")
+def logout_user():
+
+    del session['User']
+    
+    flash("You are logged out","loggedout")
+
+    return redirect("/")    
+
+
 @app.route('/login_confirm', methods=["POST"])
 def get_login():
     """Get user info"""
@@ -92,9 +102,10 @@ def get_login():
     confirmed_user = User.get_user_by_email_password(user_email, user_password)
     
     if confirmed_user:
-        flash("You're logged in!")
+        flash("You're logged in!","loggedin")
         userid = confirmed_user.user_id
         session["User"] = userid
+
         print session["User"]
         return redirect("/users/%d" % userid)
     else:

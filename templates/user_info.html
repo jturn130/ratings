@@ -1,5 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
+<ul>
+{% if "User" in session %}  
+  {% with loggedin = get_flashed_messages(category_filter = ["loggedin"]) %}
+  {% if loggedin %}
+    {% for message in loggedin %}
+      <li>{{message}}</li>
+    {% endfor %} 
+  {% endif %}
+ {% endwith %}
+ {% endif %}
+</ul>
 
 <h1> User #{{ user.user_id }}</h1>
 <h3> User age: {{ user.age }} </h3>

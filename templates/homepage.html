@@ -1,9 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
 <ul>
-  {% for message in get_flashed_messages() %}
-    <li>{{ message }}</li>
-  {% endfor %}
+{% if "User" not in session %}  
+  {% with loggedout = get_flashed_messages(category_filter = ["loggedout"]) %}
+  {% if loggedout %}
+    {% for message in loggedout %}
+      <li>{{message}}</li>
+    {% endfor %} 
+  {% endif %}
+ {% endwith %}
+ {% endif %}
+
 </ul>
 <table>
   <tr>
