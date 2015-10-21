@@ -33,12 +33,34 @@ class User(db.Model):
         
         except Exception, error:
             print error
+    
+    @classmethod
+    def get_user_by_email(cls, user_email):
+        
+        try:
+            user_login_info = cls.query.filter_by(email=user_email).one()
+            return user_login_info
+        
+        except Exception, error:
+            print error
+
+    @classmethod
+    def create_user_by_email_password(cls, user_email, user_password):
+
+        user = User(email = user_email, password = user_password)
+        print user
+        db.session.add(user)
+        db.session.commit()
+
+    
+    
 
     def __repr__(self):
         """Provide helpful representation when printed."""
 
         return "<User user_id=%s email=%s>" % (self.user_id, self.email)
 
+ 
 class Movie(db.Model):
     __tablename__ = 'movies'
 
