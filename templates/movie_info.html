@@ -4,6 +4,27 @@
 <h1> {{ movie.title }}</h1>
 
 
+{% if 'User' in session %}
+ {% for rating in movie.ratings %}
+ 
+    {% if rating.user_id == session['User'] %}
+       <h4> Your rating:    {{rating.score }}</h4>
+    
+    {% endif %}
+ {% endfor %}
+
+    <h2> RATE THIS FILM </h2>
+    <form action="/makeRating/{{ movie.movie_id }}" method='POST'>
+        <select name="rating">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>    
+        <input type="submit" value="Submit rating">
+    </form>   
+{% endif %}
 <h3> List of Ratings </h3>
  <ul>
       {% for rating in movie.ratings %}
@@ -12,7 +33,6 @@
           </li>
       {% endfor %}
     </ul>
-
 
 
 

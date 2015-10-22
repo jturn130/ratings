@@ -90,6 +90,30 @@ class Rating(db.Model):
     movie = db.relationship("Movie",
                            backref=db.backref("ratings", order_by=rating_id))
 
+    @classmethod
+    def get_rating_by_userid_movieid(cls, user_id, movie_id):
+
+        try:
+            user_rating = cls.query.filter_by(user_id=user_id, movie_id = movie_id).one()
+            return user_rating
+        
+        except Exception, error:
+            print error
+
+    @classmethod
+    def add_new_rating(cls, user_id, movie_id, score):
+
+        new_rating = Rating(user_id = user_id, movie_id = movie_id, score = score)
+        print new_rating
+        db.session.add(new_rating)
+        db.session.commit()
+
+    # @classmethod
+    # def update_existing_rating(cls, user_id, movie_id, score):
+
+    #     cls.query.filter_by(user_id=user_id, movie_id=movie_id).update(score=score)
+    #     db.session.commit()
+
 
 
     def __repr__(self):

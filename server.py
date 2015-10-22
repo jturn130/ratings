@@ -34,7 +34,7 @@ def user_list():
 
 @app.route("/users/<int:userid>")
 def get_user_info(userid):
-    """Show user info"""
+    """Show individual user info"""
 
     user = User.query.filter_by(user_id=userid).one()
     
@@ -50,21 +50,41 @@ def movie_list():
 
 @app.route("/movies/<int:movieid>")
 def get_movie_info(movieid):
-    """Show movie info"""
+    """Show individual movie info"""
 
     movie = Movie.query.filter_by(movie_id=movieid).one()
     
     return render_template("movie_info.html", movie= movie)
+
+
+@app.route("/makeRating/<int:movieid>", methods=["POST"])
+def make_rating(movieid):    
+    """Allow user to rate movie or update rating"""
+
+    rating = request.form.get("rating")
     
+    user_r = Rating.get_rating_by_userid_movieid(session['User'], movieid)
+
+    if(user_r):
+        user_rating = Rating.query.filter_by(user_id=session['User'], movie_id=movieid).one()
+        user_rating.score = rating
+    else:
+        Rating.add_new_rating(session['User'], movieid, rating)
+        
+    db.session.commit()
+
+    return redirect("/movies/{}".format(movieid))
 
 @app.route("/register")
 def register_user():
+    """Allows the user to sign up for account"""
 
     return render_template("signup_form.html")
 
 @app.route("/register-confirm", methods=["POST"])
 def confirm_new_user():
     """Create new user"""
+
     user_email = request.form.get("email")
     user_password = request.form.get("password")    
     
@@ -80,12 +100,13 @@ def confirm_new_user():
 
 @app.route("/login")
 def login_user():
+    """Logs the user in"""
 
     return render_template("login_form.html")
 
 @app.route("/logout")
 def logout_user():
-
+    """Logs out the user"""
     del session['User']
     
     flash("You are logged out","loggedout")
