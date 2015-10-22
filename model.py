@@ -1,7 +1,7 @@
 """Models and database functions for Ratings project."""
 
 from flask_sqlalchemy import SQLAlchemy
-
+from correlation import pearson
 
 # This is the connection to the SQLite database; we're getting this through
 # the Flask-SQLAlchemy helper library. On this, we can find the `session`
@@ -108,12 +108,31 @@ class Rating(db.Model):
         db.session.add(new_rating)
         db.session.commit()
 
-    # @classmethod
-    # def update_existing_rating(cls, user_id, movie_id, score):
+    @classmethod
+    def predict_rating(cls, user_id, movie_id):
 
-    #     cls.query.filter_by(user_id=user_id, movie_id=movie_id).update(score=score)
-    #     db.session.commit()
+        m = Movie.query.filter_by(movie_id=movie_id).one()
+        u = User.query.get(user_id)
 
+        u_ratings = u.ratings
+
+        other_ratings = Rating.query.filter_by(movie_id=movie_id).all()
+        other_users = [r.user for r in other_ratings]
+        ratings_pairs = []
+        pearson_results = {}
+
+        for otheruser in other_users:
+            for rating in otheruser.ratings:
+                if rating.movie_id in u_ratings.movie_id:
+                    rating_pairs.append((u.rating.score, rating.score))
+                pearson_results[otheruser.user_id]= correlation.pearson(rating_pairs)
+    
+        correlations = pearson_results.values()
+        highest_correlation = max(correlations)
+
+        for item in pearson_results.items():
+            if item[1] == highest_correlation:
+                print item[0]
 
 
     def __repr__(self):
