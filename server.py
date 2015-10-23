@@ -53,8 +53,17 @@ def get_movie_info(movieid):
     """Show individual movie info"""
 
     movie = Movie.query.filter_by(movie_id=movieid).one()
+
+    user_r = Rating.get_rating_by_userid_movieid(session['User'], movieid)
     
-    return render_template("movie_info.html", movie= movie)
+    avg = Rating.avg_rating(movie_id=movieid)
+
+    predicted_user_rating = "N/A"
+
+    if not user_r and session['User']:
+        predicted_user_rating = Rating.predict_rating(session["User"], movieid)
+    
+    return render_template("movie_info.html", movie= movie, prediction=predicted_user_rating, avg=avg)
 
 
 @app.route("/makeRating/<int:movieid>", methods=["POST"])

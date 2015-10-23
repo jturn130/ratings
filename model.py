@@ -44,6 +44,7 @@ class User(db.Model):
         except Exception, error:
             print error
 
+
     @classmethod
     def create_user_by_email_password(cls, user_email, user_password):
 
@@ -52,8 +53,6 @@ class User(db.Model):
         db.session.add(user)
         db.session.commit()
 
-    
-    
 
     def __repr__(self):
         """Provide helpful representation when printed."""
@@ -73,6 +72,10 @@ class Movie(db.Model):
         """Provide helpful representation when printed."""
 
         return "<Movie movie_id=%s title=%s>" % (self.movie_id, self.title)    
+
+    # def avg_rating(self):
+    #     ...
+
 
 class Rating(db.Model):
     __tablename__ = 'ratings'
@@ -111,28 +114,60 @@ class Rating(db.Model):
     @classmethod
     def predict_rating(cls, user_id, movie_id):
 
-        m = Movie.query.filter_by(movie_id=movie_id).one()
+        # m = Movie.query.filter_by(movie_id=movie_id).one()
         u = User.query.get(user_id)
 
         u_ratings = u.ratings
+        u_movie_score = {}
+        rating_pairs = []
+        pearson_results = {}
+
+
+        for u_rating in u_ratings:
+            u_movie_score[u_rating.movie_id] = u_rating.score
 
         other_ratings = Rating.query.filter_by(movie_id=movie_id).all()
         other_users = [r.user for r in other_ratings]
-        ratings_pairs = []
-        pearson_results = {}
-
+                
         for otheruser in other_users:
-            for rating in otheruser.ratings:
-                if rating.movie_id in u_ratings.movie_id:
-                    rating_pairs.append((u.rating.score, rating.score))
-                pearson_results[otheruser.user_id]= correlation.pearson(rating_pairs)
     
-        correlations = pearson_results.values()
-        highest_correlation = max(correlations)
+            for rating in otheruser.ratings:
+    
+                if rating.movie_id in u_movie_score:
+    
+                    rating_pairs.append((u_movie_score[rating.movie_id], rating.score))
+    
+                if rating_pairs:
 
-        for item in pearson_results.items():
-            if item[1] == highest_correlation:
-                print item[0]
+                    pearson_results[otheruser.user_id] = pearson(rating_pairs)
+        
+        if rating_pairs:
+            highest_correlation = max(pearson_results.items(), key=lambda x: abs(x[1]))
+        
+            similar_user = highest_correlation[0]
+            
+            similar_user_score = db.session.query(Rating.score).filter_by(user_id=similar_user, movie_id=movie_id).one()
+            
+            if highest_correlation[1] > 0:
+                return similar_user_score[0] * highest_correlation[1]
+            elif highest_correlation[1] < 0:
+                return (similar_user_score[0]-6) * highest_correlation[1] 
+            else:
+                return 0
+
+    @classmethod
+    def avg_rating(cls, movie_id):
+        scores = db.session.query(Rating.score).filter_by(movie_id=movie_id).all()
+        # print scores
+        
+        numerator = sum([score[0] for score in scores])
+        denominator = len(scores) 
+        # print denominator
+
+        avg_score = numerator/denominator
+
+        return avg_score
+
 
 
     def __repr__(self):

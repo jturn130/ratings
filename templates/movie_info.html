@@ -1,9 +1,15 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h1> {{ movie.title }}</h1>
 
+<h1> Movie Title: {{ movie.title }}</h1>
 
+<h4> Average rating: {{ avg }} </h4>
+<h4>
+  {% if prediction %}
+      We predict you will rate this movie {{ prediction }}.
+  {% endif %}
+</h4>
 {% if 'User' in session %}
  {% for rating in movie.ratings %}
  
